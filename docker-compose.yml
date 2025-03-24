@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  gasolinera-mysql:
+    image: mysql:8.0
+    container_name: gasolinera-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: gasolineraspring
+      MYSQL_USER: jorge
+      MYSQL_PASSWORD: 666666.j
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "jorge", "-p666666.j"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  gasolineraspring:
+    build: gasolineraspring
+    container_name: gasolineraspring
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://gasolinera-mysql:3306/gasolineraspring?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: jorge
+      SPRING_DATASOURCE_PASSWORD: 666666.j
+    depends_on:
+      gasolinera-mysql:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  mysql_data:
+
+
